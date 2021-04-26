@@ -186,7 +186,7 @@ namespace Kokoro::FileSystem
 
 #if KOKORO_WIN32
         return GetFileAttributes(svPath.data()) & FILE_ATTRIBUTE_DIRECTORY;
-#elif KOKORO_LINUX) || KOKORO_EMSCRIPTEN || KOKORO_ANDROID
+#elif KOKORO_LINUX || KOKORO_EMSCRIPTEN || KOKORO_ANDROID
         struct stat st
         {
         };
