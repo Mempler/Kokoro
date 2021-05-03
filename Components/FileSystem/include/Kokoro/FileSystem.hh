@@ -350,7 +350,7 @@ namespace Kokoro::FileSystem
         // TODO: if (fp < 0) KOKORO_CORE_ERROR("Failed to open {}",
         // svPath);
 
-        write(fp, svPath.data(), vContent.size());
+        write(fp, vContent.data(), vContent.size());
 
         close(fp);
 #else
