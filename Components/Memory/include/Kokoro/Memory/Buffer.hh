@@ -14,6 +14,21 @@ namespace Kokoro::Memory
     public:
         typedef std::vector<uint8_t> value_type;
 
+        Buffer() = default;
+        Buffer(uint8_t* pData, size_t sSize) :
+            m_vInnerBuffer(pData, pData + sSize)
+        {
+        }
+        Buffer(const std::vector<uint8_t>& vData) : m_vInnerBuffer(vData) { }
+
+        void Append(const std::vector<uint8_t>& vData)
+        {
+            // preallocate memory
+            m_vInnerBuffer.reserve(m_vInnerBuffer.size());
+            m_vInnerBuffer.insert(m_vInnerBuffer.end(), vData.begin(),
+                                  vData.end());
+        }
+
         /*****************************************************
          * Push
          *
