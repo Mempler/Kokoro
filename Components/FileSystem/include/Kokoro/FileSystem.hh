@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string_view>
+
 #include "Kokoro/Config/Platform.hh"
 #include "Kokoro/Exception/BaseException.hh"
 
@@ -7,7 +9,6 @@
 #include <iostream>
 #include <iterator>
 #include <string>
-#include <string_view>
 #include <vector>
 
 #if KOKORO_WIN32
@@ -31,22 +32,22 @@
     #error "Platform not implemented!"
 #endif
 
-#if defined(CreateDirectory)
+#if defined( CreateDirectory )
     #undef CreateDirectory
 #endif
 
-#define FS_EXCEPTION(_FMT, ...)                                                \
-    ::Kokoro::FileSystem::Exception(fmt::format(_FMT, __VA_ARGS__), __FILE__,  \
-                                    __LINE__)
+#define FS_EXCEPTION( _FMT, ... )                                              \
+    ::Kokoro::FileSystem::Exception( fmt::format( _FMT, __VA_ARGS__ ),         \
+                                     __FILE__, __LINE__ )
 
 namespace Kokoro::FileSystem
 {
     class Exception final : public Kokoro::Exception::BaseException
     {
-    public:
-        explicit Exception(std::string_view svReason, const char* svWhere,
-                           size_t sLine) :
-            BaseException("FileSystem", svReason, svWhere, sLine)
+      public:
+        explicit Exception( std::string_view svReason, const char* svWhere,
+                            size_t sLine ) :
+            BaseException( "FileSystem", svReason, svWhere, sLine )
         {
         }
     };
@@ -60,14 +61,14 @@ namespace Kokoro::FileSystem
      *
      * @return Resulting file name
      *****************************************************/
-    constexpr std::string_view GetFileName(std::string_view svPath) noexcept
+    constexpr std::string_view GetFileName( std::string_view svPath ) noexcept
     {
-        size_t a = svPath.find_last_of('/');
-        size_t b = svPath.find_last_of('\\');
+        size_t a = svPath.find_last_of( '/' );
+        size_t b = svPath.find_last_of( '\\' );
 
         size_t c = a + b + 2;
 
-        if (c > 0) return std::string_view(svPath.data() + c);
+        if ( c > 0 ) return std::string_view( svPath.data( ) + c );
 
         return svPath;  // Not found...
     }
@@ -82,15 +83,15 @@ namespace Kokoro::FileSystem
      *
      * @return true if has the given extension
      *****************************************************/
-    constexpr bool HasExtension(std::string_view svPath,
-                                std::string_view svExt) noexcept
+    constexpr bool HasExtension( std::string_view svPath,
+                                 std::string_view svExt ) noexcept
     {
-        if (svPath.length() < svExt.length()) return false;
+        if ( svPath.length( ) < svExt.length( ) ) return false;
 
         // Check if the last characters match svExt
-        return (0
-                == svPath.compare(svPath.length() - svExt.length(),
-                                  svExt.length(), svExt));
+        return ( 0
+                 == svPath.compare( svPath.length( ) - svExt.length( ),
+                                    svExt.length( ), svExt ) );
     }
 
     /*****************************************************
@@ -105,16 +106,16 @@ namespace Kokoro::FileSystem
      *
      * @return false if failed
      *****************************************************/
-    inline bool CreateDirectory(std::string_view svPath)
+    inline bool CreateDirectory( std::string_view svPath )
     {
 #if KOKORO_WIN32
-        return CreateDirectoryA(svPath.data(), NULL);
+        return CreateDirectoryA( svPath.data( ), NULL );
 #elif KOKORO_LINUX || KOKORO_EMSCRIPTEN || KOKORO_ANDROID
-        if (mkdir(svPath.data(), umask(0755)))
+        if ( mkdir( svPath.data( ), umask( 0755 ) ) )
         {
-            chmod(svPath.data(),
-                  umask(0755));  // set the correct permissions
-                                 // cause it's wrong for some reason
+            chmod( svPath.data( ),
+                   umask( 0755 ) );  // set the correct permissions
+                                     // cause it's wrong for some reason
             return true;
         }
 #else
@@ -134,18 +135,18 @@ namespace Kokoro::FileSystem
      *
      * @return Joined file path
      *****************************************************/
-    inline std::string JoinPath(std::string_view svPath1,
-                                std::string_view svPath2)
+    inline std::string JoinPath( std::string_view svPath1,
+                                 std::string_view svPath2 )
     {
         // Make sure our paths are valid
-        if (svPath1.length() <= 0) return svPath2.data();
-        if (svPath2.length() <= 0) return svPath1.data();
+        if ( svPath1.length( ) <= 0 ) return svPath2.data( );
+        if ( svPath2.length( ) <= 0 ) return svPath1.data( );
 
-        if (svPath1[svPath1.length() - 1] == '/'
-            || svPath1[svPath1.length() - 1] == '\\')
-            return std::string(svPath1.data()) + svPath2.data();
+        if ( svPath1 [ svPath1.length( ) - 1 ] == '/'
+             || svPath1 [ svPath1.length( ) - 1 ] == '\\' )
+            return std::string( svPath1.data( ) ) + svPath2.data( );
 
-        return std::string(svPath1) + "/" + svPath2.data();
+        return std::string( svPath1 ) + "/" + svPath2.data( );
     }
 
     /*****************************************************
@@ -157,14 +158,14 @@ namespace Kokoro::FileSystem
      *
      * @return true if exists
      *****************************************************/
-    inline bool Exists(std::string_view svPath)
+    inline bool Exists( std::string_view svPath )
     {
 #if KOKORO_WIN32
-        const auto dir_type = GetFileAttributesA(svPath.data());
+        const auto dir_type = GetFileAttributesA( svPath.data( ) );
 
         return dir_type != INVALID_FILE_ATTRIBUTES;
 #elif KOKORO_LINUX || KOKORO_EMSCRIPTEN || KOKORO_ANDROID
-        return (access(svPath.data(), F_OK) != -1);
+        return ( access( svPath.data( ), F_OK ) != -1 );
 #else
     #error "Platform not implemented!"
 #endif
@@ -180,18 +181,18 @@ namespace Kokoro::FileSystem
      *
      * @return true if is a directory
      *****************************************************/
-    inline bool IsDirectory(std::string_view svPath)
+    inline bool IsDirectory( std::string_view svPath )
     {
-        if (!Exists(svPath)) return false;
+        if ( !Exists( svPath ) ) return false;
 
 #if KOKORO_WIN32
-        return GetFileAttributes(svPath.data()) & FILE_ATTRIBUTE_DIRECTORY;
+        return GetFileAttributes( svPath.data( ) ) & FILE_ATTRIBUTE_DIRECTORY;
 #elif KOKORO_LINUX || KOKORO_EMSCRIPTEN || KOKORO_ANDROID
         struct stat st
         {
         };
-        stat(svPath.data(), &st);
-        return S_ISDIR(st.st_mode);
+        stat( svPath.data( ), &st );
+        return S_ISDIR( st.st_mode );
 #else
     #error "Platform not implemented!"
 #endif
@@ -207,8 +208,8 @@ namespace Kokoro::FileSystem
      *
      * @return All paths in given path
      *****************************************************/
-    inline std::vector<std::string> ReadDirectory(std::string_view svPath,
-                                                  bool bRecursive = false)
+    inline std::vector<std::string> ReadDirectory( std::string_view svPath,
+                                                   bool bRecursive = false )
     {
         std::vector<std::string> directories;
 
@@ -217,49 +218,51 @@ namespace Kokoro::FileSystem
         WIN32_FIND_DATA FindFileData;
 
         // Requires a * wildcard for some reason
-        if ((hFind = FindFirstFile(FileSystem::JoinPath(svPath, "./*").data(),
-                                   &FindFileData))
-            != INVALID_HANDLE_VALUE)
+        if ( ( hFind =
+                   FindFirstFile( FileSystem::JoinPath( svPath, "./*" ).data( ),
+                                  &FindFileData ) )
+             != INVALID_HANDLE_VALUE )
         {
-            do {
-                if (std::string_view(FindFileData.cFileName) == "."
-                    || std::string_view(FindFileData.cFileName) == "..")
+            do
+            {
+                if ( std::string_view( FindFileData.cFileName ) == "."
+                     || std::string_view( FindFileData.cFileName ) == ".." )
                     continue;
 
                 directories.push_back(
-                    FileSystem::JoinPath(svPath, FindFileData.cFileName));
-            } while (FindNextFile(hFind, &FindFileData));
-            FindClose(hFind);
+                    FileSystem::JoinPath( svPath, FindFileData.cFileName ) );
+            } while ( FindNextFile( hFind, &FindFileData ) );
+            FindClose( hFind );
         }
 #elif KOKORO_LINUX || KOKORO_EMSCRIPTEN || KOKORO_ANDROID
         DIR* dir;
         struct dirent* ent;
-        if ((dir = opendir(svPath.data())) != nullptr)
+        if ( ( dir = opendir( svPath.data( ) ) ) != nullptr )
         {
-            while ((ent = readdir(dir)) != nullptr)
+            while ( ( ent = readdir( dir ) ) != nullptr )
             {
-                if (std::string_view(ent->d_name) == "."
-                    || std::string_view(ent->d_name) == "..")
+                if ( std::string_view( ent->d_name ) == "."
+                     || std::string_view( ent->d_name ) == ".." )
                     continue;
 
                 directories.push_back(
-                    FileSystem::JoinPath(svPath, ent->d_name));
+                    FileSystem::JoinPath( svPath, ent->d_name ) );
             }
-            closedir(dir);
+            closedir( dir );
         }
 #else
     #error "Platform not implemented!"
 #endif
 
-        if (bRecursive && !directories.empty())
+        if ( bRecursive && !directories.empty( ) )
         {
-            for (const auto& _dir : directories)
+            for ( const auto& _dir : directories )
             {
-                if (FileSystem::IsDirectory(_dir))
+                if ( FileSystem::IsDirectory( _dir ) )
                 {
-                    for (const auto& __dir : ReadDirectory(_dir, true))
+                    for ( const auto& __dir : ReadDirectory( _dir, true ) )
                     {
-                        directories.push_back(__dir);
+                        directories.push_back( __dir );
                     }
                 }
             }
@@ -277,23 +280,24 @@ namespace Kokoro::FileSystem
      *
      * @return full path
      *****************************************************/
-    inline std::string ResolveFullPath(std::string_view svPath)
+    inline std::string ResolveFullPath( std::string_view svPath )
     {
 #if KOKORO_WIN32
-        char buffer[4096];
-        if (IS_ERROR(GetFullPathNameA(svPath.data(), 4096, buffer, nullptr)))
-            throw FS_EXCEPTION("Failed to resolve full path of {}",
-                               svPath.data());
+        char buffer [ 4096 ];
+        if ( IS_ERROR(
+                 GetFullPathNameA( svPath.data( ), 4096, buffer, nullptr ) ) )
+            throw FS_EXCEPTION( "Failed to resolve full path of {}",
+                                svPath.data( ) );
 
         return buffer;
 #elif KOKORO_LINUX || KOKORO_EMSCRIPTEN || KOKORO_ANDROID
-        char buffer[PATH_MAX + 1];
+        char buffer [ PATH_MAX + 1 ];
 
-        if (realpath(svPath.data(), buffer) == nullptr)
-            throw FS_EXCEPTION("Failed to resolve full path of {}",
-                               svPath.data());
+        if ( realpath( svPath.data( ), buffer ) == nullptr )
+            throw FS_EXCEPTION( "Failed to resolve full path of {}",
+                                svPath.data( ) );
 
-        return std::string(buffer);
+        return std::string( buffer );
 #else
     #error "Platform not implemented!"
 #endif
@@ -308,26 +312,26 @@ namespace Kokoro::FileSystem
      *
      * @return content
      *****************************************************/
-    inline std::vector<uint8_t> ReadBinaryFile(std::string_view svPath)
+    inline std::vector<uint8_t> ReadBinaryFile( std::string_view svPath )
     {
-        std::ifstream file(svPath.data(), std::ios::binary | std::ios::in);
-        if (!file && file.fail())
-            throw FS_EXCEPTION("Failed to open {}", svPath);
+        std::ifstream file( svPath.data( ), std::ios::binary | std::ios::in );
+        if ( !file && file.fail( ) )
+            throw FS_EXCEPTION( "Failed to open {}", svPath );
 
-        file.unsetf(std::ios::skipws);  // Read the file properly!
+        file.unsetf( std::ios::skipws );  // Read the file properly!
 
-        file.seekg(0, std::ios::end);
-        const auto fileSize = file.tellg();
-        file.seekg(0, std::ios::beg);
+        file.seekg( 0, std::ios::end );
+        const auto fileSize = file.tellg( );
+        file.seekg( 0, std::ios::beg );
 
         // If we got nothing, just return an empty vector.
-        if (fileSize <= 0) return {};
+        if ( fileSize <= 0 ) return { };
 
         std::vector<uint8_t> data;
-        data.reserve(fileSize);
+        data.reserve( fileSize );
 
-        data.insert(data.begin(), std::istream_iterator<uint8_t>(file),
-                    std::istream_iterator<uint8_t>());
+        data.insert( data.begin( ), std::istream_iterator<uint8_t>( file ),
+                     std::istream_iterator<uint8_t>( ) );
 
         return data;
     }
@@ -340,33 +344,33 @@ namespace Kokoro::FileSystem
      * @param svPath Input path
      * @param vContent Content
      *****************************************************/
-    inline void WriteBinaryFile(std::string_view svPath,
-                                const std::vector<uint8_t>& vContent)
+    inline void WriteBinaryFile( std::string_view svPath,
+                                 const std::vector<uint8_t>& vContent )
     {
 #if KOKORO_LINUX || KOKORO_ANDROID
-        auto fp = open(svPath.data(), O_WRONLY | O_CREAT, umask(0755));
-        if (fp < 0) throw FS_EXCEPTION("Failed to write {}", svPath);
+        auto fp = open( svPath.data( ), O_WRONLY | O_CREAT, umask( 0755 ) );
+        if ( fp < 0 ) throw FS_EXCEPTION( "Failed to write {}", svPath );
 
         // TODO: if (fp < 0) KOKORO_CORE_ERROR("Failed to open {}",
         // svPath);
 
-        write(fp, vContent.data(), vContent.size());
+        write( fp, vContent.data( ), vContent.size( ) );
 
-        close(fp);
+        close( fp );
 #else
-        std::ofstream file(svPath.data(), std::ios::binary | std::ios::out);
-        if (!file && file.fail())
-            throw FS_EXCEPTION("Failed to open {}", svPath);
+        std::ofstream file( svPath.data( ), std::ios::binary | std::ios::out );
+        if ( !file && file.fail( ) )
+            throw FS_EXCEPTION( "Failed to open {}", svPath );
 
-        file.unsetf(std::ios::skipws);
+        file.unsetf( std::ios::skipws );
 
-        file.write((const char*) vContent.data(), vContent.size());
-        file.close();
+        file.write( (const char*) vContent.data( ), vContent.size( ) );
+        file.close( );
 #endif
 
 #if KOKORO_LINUX || KOKORO_EMSCRIPTEN || KOKORO_ANDROID
-        chmod(svPath.data(),
-              umask(0755));  // set the correct permissions cause it's wrong
+        chmod( svPath.data( ),
+               umask( 0755 ) );  // set the correct permissions cause it's wrong
 #endif
     }
 
@@ -377,7 +381,10 @@ namespace Kokoro::FileSystem
      *
      * @param svPath Input path
      *****************************************************/
-    inline void Touch(std::string_view svPath) { WriteBinaryFile(svPath, {}); }
+    inline void Touch( std::string_view svPath )
+    {
+        WriteBinaryFile( svPath, { } );
+    }
 
     /*****************************************************
      * Delete
@@ -386,5 +393,8 @@ namespace Kokoro::FileSystem
      *
      * @param svPath Input path
      *****************************************************/
-    inline void Delete(std::string_view svPath) { remove(svPath.data()); }
+    inline void Delete( std::string_view svPath )
+    {
+        remove( svPath.data( ) );
+    }
 }  // namespace Kokoro::FileSystem

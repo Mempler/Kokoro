@@ -6,32 +6,32 @@
 
 class TestEvent : public Kokoro::BaseEvent
 {
-public:
-    void Execute(std::vector<void*> pData) override
+  public:
+    void Execute( std::vector<void*> pData ) override
     {
-        auto number = GetDataValue<0, uint32_t*>(pData);
-        auto string = GetDataValue<1, const char*>(pData);
+        auto number = GetDataValue<0, uint32_t*>( pData );
+        auto string = GetDataValue<1, const char*>( pData );
 
-        ASSERT_EQ(*number, 42);
-        ASSERT_EQ(string, "Hello World!");
+        ASSERT_EQ( *number, 42 );
+        ASSERT_EQ( string, "Hello World!" );
 
         *number = 13;
     }
 
-private:
-    ImplementEventStuff(TestEvent);
+  private:
+    ImplementEventStuff( TestEvent );
 };
 
-RegisterEvent(TestEvent);
+RegisterEvent( TestEvent );
 
-TEST(EventPipeline, Execute)
+TEST( EventPipeline, Execute )
 {
     Kokoro::EventPipeline eventPipeline;
 
     uint32_t iVal = 42;
     const char* szString = "Hello World!";
 
-    eventPipeline.Execute("TestEvent", &iVal, szString);
+    eventPipeline.Execute( "TestEvent", &iVal, szString );
 
-    ASSERT_EQ(iVal, 13);
+    ASSERT_EQ( iVal, 13 );
 }

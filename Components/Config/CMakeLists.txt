@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.0.0)
+set(RequiredComponents
+)
 
-project(kokoro_config VERSION "1.0" LANGUAGES CXX)
-
-add_library(${PROJECT_NAME} INTERFACE)
-    target_include_directories(${PROJECT_NAME} INTERFACE include)
+add_library(kokoro_config INTERFACE)
+    target_include_directories(kokoro_config INTERFACE include)
+    target_link_libraries(kokoro_config ${RequiredComponents})
     
-add_library(Kokoro::Config ALIAS ${PROJECT_NAME})
+add_library(Kokoro::Config ALIAS kokoro_config)

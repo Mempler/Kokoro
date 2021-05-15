@@ -4,29 +4,35 @@
 #include <cstring>
 #include <iostream>
 #include <iterator>
+#include <memory>
+#include <new>
 #include <string>
 #include <vector>
 
 namespace Kokoro::Memory
 {
+    template <typename _Alloc = std::allocator<uint8_t>>
     class Buffer
     {
-    public:
-        typedef std::vector<uint8_t> value_type;
+      public:
+        typedef uint8_t value_type;
+        typedef std::vector<value_type, _Alloc> vector_type;
 
-        Buffer() = default;
-        Buffer(uint8_t* pData, size_t sSize) :
-            m_vInnerBuffer(pData, pData + sSize)
+        Buffer( ) = default;
+        Buffer( uint8_t* pData, size_t sSize ) :
+            m_vInnerBuffer( pData, pData + sSize )
         {
         }
-        Buffer(const std::vector<uint8_t>& vData) : m_vInnerBuffer(vData) { }
+        Buffer( const vector_type& vData ) : m_vInnerBuffer( vData )
+        {
+        }
 
-        void Append(const std::vector<uint8_t>& vData)
+        void Append( const vector_type& vData )
         {
             // preallocate memory
-            m_vInnerBuffer.reserve(m_vInnerBuffer.size());
-            m_vInnerBuffer.insert(m_vInnerBuffer.end(), vData.begin(),
-                                  vData.end());
+            m_vInnerBuffer.reserve( m_vInnerBuffer.size( ) );
+            m_vInnerBuffer.insert( m_vInnerBuffer.end( ), vData.begin( ),
+                                   vData.end( ) );
         }
 
         /*****************************************************
@@ -38,40 +44,40 @@ namespace Kokoro::Memory
          *
          * @return Self
          *****************************************************/
-        template<typename T>
-        Buffer* Push(T tVal)
+        template <typename T>
+        Buffer* Push( T tVal )
         {
-            size_t vSz = sizeof(T);
-            prealloc(vSz);
+            size_t vSz = sizeof( T );
+            prealloc( vSz );
 
             uint8_t* vPtr;
-            if (std::is_pointer<T>::value)  // This is fine if we're on an x86
-                                            // CPU as it uses little endian by
-                                            // default!
+            if ( std::is_pointer<T>::value )  // This is fine if we're on an x86
+                                              // CPU as it uses little endian by
+                                              // default!
                 vPtr = *(uint8_t**) &tVal;
             else
                 vPtr = (uint8_t*) &tVal;
 
-            if (std::is_same<T, std::string>::value)  // Implementation for
-                                                      // wrapping strings
+            if ( std::is_same<T, std::string>::value )  // Implementation for
+                                                        // wrapping strings
             {
-                auto inner = *(std::string*) (&tVal);
+                auto inner = *(std::string*) ( &tVal );
                 vPtr = nullptr;
                 vSz = 0;
 
-                this->Push(inner.c_str());
+                this->Push( inner.c_str( ) );
             }
 
-            if (std::is_same<T, const char*>::value)  // Implementation for
-                                                      // wrapping const char*
+            if ( std::is_same<T, const char*>::value )  // Implementation for
+                                                        // wrapping const char*
             {
                 vPtr = *(uint8_t**) &tVal;
-                vSz = strlen((const char*) vPtr);
+                vSz = strlen( (const char*) vPtr );
 
-                prealloc(vSz);
+                prealloc( vSz );
             }
 
-            std::copy(vPtr, vPtr + vSz, std::back_inserter(m_vInnerBuffer));
+            std::copy( vPtr, vPtr + vSz, std::back_inserter( m_vInnerBuffer ) );
 
             return this;
         }
@@ -88,29 +94,29 @@ namespace Kokoro::Memory
          *
          * @return Self
          *****************************************************/
-        template<typename T>
-        T Pop(size_t sSize)
+        template <typename T>
+        T Pop( size_t sSize )
         {
-            T* vPtr = (T*) (m_vInnerBuffer.data() + m_sPos);
+            T* vPtr = (T*) ( m_vInnerBuffer.data( ) + m_sPos );
             m_sPos += sSize;
 
-            if (std::is_same<T, std::string>::value)  // Implementation for
-                                                      // wrapping strings
+            if ( std::is_same<T, std::string>::value )  // Implementation for
+                                                        // wrapping strings
             {
-                std::string empty =
-                    std::string((const char*) vPtr, (const char*) vPtr + sSize);
+                std::string empty = std::string( (const char*) vPtr,
+                                                 (const char*) vPtr + sSize );
 
                 return *(T*) &empty;
             }
 
-            if (std::is_same<T, const char*>::value)  // Implementation for
-                                                      // wrapping const char*
+            if ( std::is_same<T, const char*>::value )  // Implementation for
+                                                        // wrapping const char*
             {
-                auto buff = new char[sSize + 1];
-                std::copy((char*) vPtr, (char*) vPtr + sSize, buff);
-                buff[sSize] = 0;  // Set null terminator
+                auto buff = new char [ sSize + 1 ];
+                std::copy( (char*) vPtr, (char*) vPtr + sSize, buff );
+                buff [ sSize ] = 0;  // Set null terminator
                 vPtr = (T*) buff;
-                return *((T*) &vPtr);
+                return *( (T*) &vPtr );
             }
 
             return *vPtr;
@@ -123,16 +129,19 @@ namespace Kokoro::Memory
          *
          * @return Written data
          *****************************************************/
-        const value_type& data() { return this->m_vInnerBuffer; }
-
-    private:
-        void prealloc(size_t l)
+        const vector_type& data( )
         {
-            if (m_vInnerBuffer.capacity() < m_vInnerBuffer.size() + l)
-                m_vInnerBuffer.reserve(m_vInnerBuffer.capacity() + 1024);
+            return this->m_vInnerBuffer;
         }
 
-        size_t m_sPos{};
-        value_type m_vInnerBuffer{};
+      private:
+        void prealloc( size_t l )
+        {
+            if ( m_vInnerBuffer.capacity( ) < m_vInnerBuffer.size( ) + l )
+                m_vInnerBuffer.reserve( m_vInnerBuffer.capacity( ) + 1024 );
+        }
+
+        size_t m_sPos { };
+        vector_type m_vInnerBuffer { };
     };
 }  // namespace Kokoro::Memory

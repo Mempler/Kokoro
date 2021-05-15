@@ -1,13 +1,10 @@
-cmake_minimum_required(VERSION 3.0.0)
-
-project(kokoro_exception VERSION "1.0" LANGUAGES CXX)
-
-set(CMAKE_CXX_STANDARD 17)
+set(RequiredComponents
+)
 
 add_subdirectory(third-party/fmt)
 
-add_library(${PROJECT_NAME} INTERFACE)
-    target_include_directories(${PROJECT_NAME} INTERFACE include)
-    target_link_libraries(${PROJECT_NAME} INTERFACE fmt)
+add_library(kokoro_exception INTERFACE)
+    target_include_directories(kokoro_exception INTERFACE include)
+    target_link_libraries(kokoro_exception INTERFACE ${RequiredComponents} fmt)
     
-add_library(Kokoro::Exception ALIAS ${PROJECT_NAME})
+add_library(Kokoro::Exception ALIAS kokoro_exception)
