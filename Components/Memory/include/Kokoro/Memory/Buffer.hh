@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Kokoro/Memory/Span.hh>
+
 #include <algorithm>
 #include <cstring>
 #include <iostream>
@@ -11,28 +13,31 @@
 
 namespace Kokoro::Memory
 {
-    template <typename _Alloc = std::allocator<uint8_t>>
-    class Buffer
+    template <typename _Alloc>
+    class BufferA
     {
       public:
         typedef uint8_t value_type;
         typedef std::vector<value_type, _Alloc> vector_type;
+        typedef typename vector_type::iterator iterator;
+        typedef Memory::Span<value_type> span_type;
 
-        Buffer( ) = default;
-        Buffer( uint8_t* pData, size_t sSize ) :
-            m_vInnerBuffer( pData, pData + sSize )
+        BufferA( ) = default;
+        BufferA( uint8_t* pData, size_t sSize ) : m_vInnerBuffer( pData, pData + sSize )
         {
         }
-        Buffer( const vector_type& vData ) : m_vInnerBuffer( vData )
+        BufferA( vector_type const& vData ) : m_vInnerBuffer( vData )
+        {
+        }
+        BufferA( span_type const& vData ) : m_vInnerBuffer( vData.begin( ), vData.end( ) )
         {
         }
 
-        void Append( const vector_type& vData )
+        void Append( span_type const& vData )
         {
             // preallocate memory
             m_vInnerBuffer.reserve( m_vInnerBuffer.size( ) );
-            m_vInnerBuffer.insert( m_vInnerBuffer.end( ), vData.begin( ),
-                                   vData.end( ) );
+            m_vInnerBuffer.insert( m_vInnerBuffer.end( ), vData.begin( ), vData.end( ) );
         }
 
         /*****************************************************
@@ -45,7 +50,7 @@ namespace Kokoro::Memory
          * @return Self
          *****************************************************/
         template <typename T>
-        Buffer* Push( T tVal )
+        BufferA* Push( T tVal )
         {
             size_t vSz = sizeof( T );
             prealloc( vSz );
@@ -103,8 +108,8 @@ namespace Kokoro::Memory
             if ( std::is_same<T, std::string>::value )  // Implementation for
                                                         // wrapping strings
             {
-                std::string empty = std::string( (const char*) vPtr,
-                                                 (const char*) vPtr + sSize );
+                std::string empty =
+                    std::string( (const char*) vPtr, (const char*) vPtr + sSize );
 
                 return *(T*) &empty;
             }
@@ -129,9 +134,34 @@ namespace Kokoro::Memory
          *
          * @return Written data
          *****************************************************/
-        const vector_type& data( )
+        value_type* data( )
         {
-            return this->m_vInnerBuffer;
+            return this->m_vInnerBuffer.data( );
+        }
+
+        iterator begin( )
+        {
+            return this->m_vInnerBuffer.begin( );
+        }
+
+        iterator end( )
+        {
+            return this->m_vInnerBuffer.end( );
+        }
+
+        iterator current( )
+        {
+            return begin( ) + pos( );
+        }
+
+        size_t pos( ) const
+        {
+            return m_sPos;
+        }
+
+        operator span_type( )
+        {
+            return m_vInnerBuffer;
         }
 
       private:
@@ -144,4 +174,6 @@ namespace Kokoro::Memory
         size_t m_sPos { };
         vector_type m_vInnerBuffer { };
     };
+
+    typedef BufferA<std::allocator<uint8_t>> Buffer;
 }  // namespace Kokoro::Memory
