@@ -1,4 +1,5 @@
 set(RequiredComponents
+    Kokoro::Memory
 )
 
 add_library(kokoro_utility INTERFACE)
