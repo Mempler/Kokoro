@@ -201,7 +201,7 @@
       }
 #  endif
 #  define FMT_BEGIN_NAMESPACE \
-    namespace fmt {           \
+    namespace Kokoro::fmt {   \
     FMT_INLINE_NAMESPACE v7 {
 #endif
 
@@ -292,7 +292,8 @@ FMT_NORETURN FMT_API void assert_fail(const char* file, int line,
 #    define FMT_ASSERT(condition, message)                                    \
       ((condition) /* void() fails with -Winvalid-constexpr on clang 4.0.1 */ \
            ? (void)0                                                          \
-           : ::fmt::detail::assert_fail(__FILE__, __LINE__, (message)))
+           : ::Kokoro::fmt::detail::assert_fail(__FILE__, __LINE__,           \
+                                                (message)))
 #  endif
 #endif
 
@@ -783,9 +784,7 @@ class iterator_buffer final : public Traits, public buffer<T> {
 
  public:
   explicit iterator_buffer(OutputIt out, size_t n = buffer_size)
-      : Traits(n),
-        buffer<T>(data_, 0, buffer_size),
-        out_(out) {}
+      : Traits(n), buffer<T>(data_, 0, buffer_size), out_(out) {}
   ~iterator_buffer() { flush(); }
 
   OutputIt out() {

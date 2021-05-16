@@ -29,8 +29,8 @@
 
 // Dummy implementations of strerror_r and strerror_s called if corresponding
 // system functions are not available.
-inline fmt::detail::null<> strerror_r(int, char*, ...) { return {}; }
-inline fmt::detail::null<> strerror_s(char*, size_t, ...) { return {}; }
+inline Kokoro::fmt::detail::null<> strerror_r(int, char*, ...) { return {}; }
+inline Kokoro::fmt::detail::null<> strerror_s(char*, size_t, ...) { return {}; }
 
 FMT_BEGIN_NAMESPACE
 namespace detail {
