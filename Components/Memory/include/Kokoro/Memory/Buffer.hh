@@ -178,7 +178,7 @@ namespace Kokoro::Memory
 
         bool can_read( size_t l )
         {
-            return l < end( ) - current( );
+            return l - 1 < size( ) - m_sPos;
         }
 
       private:
