@@ -176,6 +176,11 @@ namespace Kokoro::Memory
             return m_vInnerBuffer;
         }
 
+        bool can_read( size_t l )
+        {
+            return l < end( ) - current( );
+        }
+
       private:
         void prealloc( size_t l )
         {
