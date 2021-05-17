@@ -9,7 +9,7 @@ TEST( Buffer, PushI8 )
 
     buffer.Push<int8_t>( 0x0F );
 
-    ASSERT_THAT( buffer.data( ), testing::ElementsAre( 0x0F ) );
+    ASSERT_THAT( buffer.vec( ), testing::ElementsAre( 0x0F ) );
 }
 
 TEST( Buffer, PushI16 )
@@ -18,7 +18,7 @@ TEST( Buffer, PushI16 )
 
     buffer.Push<int16_t>( 0xFFFA );
 
-    ASSERT_THAT( buffer.data( ), testing::ElementsAre( 0xFA, 0xFF ) );
+    ASSERT_THAT( buffer.vec( ), testing::ElementsAre( 0xFA, 0xFF ) );
 }
 
 TEST( Buffer, PushI32 )
@@ -27,8 +27,7 @@ TEST( Buffer, PushI32 )
 
     buffer.Push<int32_t>( 0xFFFFFFFA );
 
-    ASSERT_THAT( buffer.data( ),
-                 testing::ElementsAre( 0xFA, 0xFF, 0xFF, 0xFF ) );
+    ASSERT_THAT( buffer.vec( ), testing::ElementsAre( 0xFA, 0xFF, 0xFF, 0xFF ) );
 }
 
 TEST( Buffer, PushI64 )
@@ -37,9 +36,8 @@ TEST( Buffer, PushI64 )
 
     buffer.Push<int64_t>( 0xFFFFFFFFFFFFFFFA );
 
-    ASSERT_THAT( buffer.data( ),
-                 testing::ElementsAre( 0xFA, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-                                       0xFF ) );
+    ASSERT_THAT( buffer.vec( ),
+                 testing::ElementsAre( 0xFA, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ) );
 }
 
 TEST( Buffer, PushU8 )
@@ -48,7 +46,7 @@ TEST( Buffer, PushU8 )
 
     buffer.Push<uint8_t>( 0x0F );
 
-    ASSERT_THAT( buffer.data( ), testing::ElementsAre( 0x0F ) );
+    ASSERT_THAT( buffer.vec( ), testing::ElementsAre( 0x0F ) );
 }
 
 TEST( Buffer, PushU16 )
@@ -57,7 +55,7 @@ TEST( Buffer, PushU16 )
 
     buffer.Push<uint16_t>( 0xFFFA );
 
-    ASSERT_THAT( buffer.data( ), testing::ElementsAre( 0xFA, 0xFF ) );
+    ASSERT_THAT( buffer.vec( ), testing::ElementsAre( 0xFA, 0xFF ) );
 }
 
 TEST( Buffer, PushU32 )
@@ -66,8 +64,7 @@ TEST( Buffer, PushU32 )
 
     buffer.Push<uint32_t>( 0xFFFFFFFA );
 
-    ASSERT_THAT( buffer.data( ),
-                 testing::ElementsAre( 0xFA, 0xFF, 0xFF, 0xFF ) );
+    ASSERT_THAT( buffer.vec( ), testing::ElementsAre( 0xFA, 0xFF, 0xFF, 0xFF ) );
 }
 
 TEST( Buffer, PushU64 )
@@ -76,9 +73,8 @@ TEST( Buffer, PushU64 )
 
     buffer.Push<uint64_t>( 0xFFFFFFFFFFFFFFFA );
 
-    ASSERT_THAT( buffer.data( ),
-                 testing::ElementsAre( 0xFA, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-                                       0xFF ) );
+    ASSERT_THAT( buffer.vec( ),
+                 testing::ElementsAre( 0xFA, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ) );
 }
 
 TEST( Buffer, PushFloat )
@@ -87,8 +83,7 @@ TEST( Buffer, PushFloat )
 
     buffer.Push<float>( 0.12345f );
 
-    ASSERT_THAT( buffer.data( ),
-                 testing::ElementsAre( 0x5B, 0xD3, 0xFC, 0x3D ) );
+    ASSERT_THAT( buffer.vec( ), testing::ElementsAre( 0x5B, 0xD3, 0xFC, 0x3D ) );
 }
 
 TEST( Buffer, PushDouble )
@@ -97,9 +92,8 @@ TEST( Buffer, PushDouble )
 
     buffer.Push<double>( 0.12345 );
 
-    ASSERT_THAT( buffer.data( ),
-                 testing::ElementsAre( 0x7C, 0xF2, 0xB0, 0x50, 0x6B, 0x9A, 0xBF,
-                                       0x3F ) );
+    ASSERT_THAT( buffer.vec( ),
+                 testing::ElementsAre( 0x7C, 0xF2, 0xB0, 0x50, 0x6B, 0x9A, 0xBF, 0x3F ) );
 }
 
 TEST( Buffer, PushCString )
@@ -108,9 +102,8 @@ TEST( Buffer, PushCString )
 
     buffer.Push<const char*>( "Hello World!" );
 
-    ASSERT_THAT( buffer.data( ),
-                 testing::ElementsAre( 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o',
-                                       'r', 'l', 'd', '!' ) );
+    ASSERT_THAT( buffer.vec( ), testing::ElementsAre( 'H', 'e', 'l', 'l', 'o', ' ', 'W',
+                                                      'o', 'r', 'l', 'd', '!' ) );
 }
 
 TEST( Buffer, PushCPPString )
@@ -119,9 +112,8 @@ TEST( Buffer, PushCPPString )
 
     buffer.Push<std::string>( "Hello World!" );
 
-    ASSERT_THAT( buffer.data( ),
-                 testing::ElementsAre( 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o',
-                                       'r', 'l', 'd', '!' ) );
+    ASSERT_THAT( buffer.vec( ), testing::ElementsAre( 'H', 'e', 'l', 'l', 'o', ' ', 'W',
+                                                      'o', 'r', 'l', 'd', '!' ) );
 }
 
 TEST( Buffer, PopI8 )
@@ -220,7 +212,11 @@ TEST( Buffer, PopCString )
 
     buffer.Push<const char*>( "Hello World!" );
 
-    ASSERT_STREQ( buffer.Pop<const char*>( 12 ), "Hello World!" );
+    auto data = buffer.Pop<const char*>( 12 );
+
+    ASSERT_STREQ( data, "Hello World!" );
+
+    delete [] data;
 }
 
 TEST( Buffer, PopCPPString )

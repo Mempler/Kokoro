@@ -95,6 +95,8 @@ namespace Kokoro::Memory
          * NOTE: It wont be removed! it'll just increase
          *       an internal value
          *
+         * NOTE: Make sure to delete a const char* if returned
+         *
          * @param tVal Value
          *
          * @return Self
@@ -154,9 +156,19 @@ namespace Kokoro::Memory
             return begin( ) + pos( );
         }
 
+        vector_type& vec( )
+        {
+            return m_vInnerBuffer;
+        }
+
         size_t pos( ) const
         {
             return m_sPos;
+        }
+
+        size_t size( ) const
+        {
+            return m_vInnerBuffer.size( );
         }
 
         operator span_type( )

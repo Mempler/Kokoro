@@ -3,6 +3,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <algorithm>
+
 TEST( FileSystem, CreateDirectory )
 {
     Kokoro::FileSystem::CreateDirectory( "./TestDir" );
@@ -42,8 +44,9 @@ TEST( FileSystem, ReadDirectory )
 
     auto dir_info = Kokoro::FileSystem::ReadDirectory( "./TestDir" );
 
-    ASSERT_THAT( dir_info,
-                 testing::ElementsAre( "./TestDir/Dir", "./TestDir/File" ) );
+    std::sort( dir_info.begin( ), dir_info.end( ) );
+
+    EXPECT_THAT( dir_info, testing::ElementsAre( "./TestDir/Dir", "./TestDir/File" ) );
 }
 
 TEST( FileSystem, ResolveFullPath )
@@ -59,9 +62,8 @@ TEST( FileSystem, ReadBinaryFile )
 
     Kokoro::FileSystem::WriteBinaryFile( "./TestFile", data );
 
-    ASSERT_THAT(
-        Kokoro::FileSystem::ReadBinaryFile( "./TestFile" ),
-        testing::ElementsAre( 'M', 'e', 'm', 'p', 'l', 'e', 'r', 17 ) );
+    ASSERT_THAT( Kokoro::FileSystem::ReadBinaryFile( "./TestFile" ),
+                 testing::ElementsAre( 'M', 'e', 'm', 'p', 'l', 'e', 'r', 17 ) );
 }
 
 TEST( FileSystem, WriteBinaryFile )
@@ -70,31 +72,23 @@ TEST( FileSystem, WriteBinaryFile )
 
     Kokoro::FileSystem::WriteBinaryFile( "./TestFile", data );
 
-    ASSERT_THAT(
-        Kokoro::FileSystem::ReadBinaryFile( "./TestFile" ),
-        testing::ElementsAre( 'M', 'e', 'm', 'p', 'l', 'e', 'r', 17 ) );
+    ASSERT_THAT( Kokoro::FileSystem::ReadBinaryFile( "./TestFile" ),
+                 testing::ElementsAre( 'M', 'e', 'm', 'p', 'l', 'e', 'r', 17 ) );
 }
 
 TEST( FileSystem, HasExtension )
 {
     Kokoro::FileSystem::Touch( "./TestFile.test" );
 
-    auto testFile = (const char*) malloc( 16 );
-    memcpy( (void*) testFile, "./TestFile.test", 16 );
-
-    ASSERT_TRUE( Kokoro::FileSystem::HasExtension( testFile, ".test" ) );
-    ASSERT_TRUE(
-        Kokoro::FileSystem::HasExtension( "./TestFile.test", ".test" ) );
-    ASSERT_FALSE(
-        Kokoro::FileSystem::HasExtension( "./TestFile.test", ".est" ) );
+    ASSERT_TRUE( Kokoro::FileSystem::HasExtension( "./TestFile.test", ".test" ) );
+    ASSERT_FALSE( Kokoro::FileSystem::HasExtension( "./TestFile.test", ".est" ) );
 }
 
 TEST( FileSystem, GetFileName )
 {
     ASSERT_EQ( Kokoro::FileSystem::GetFileName( "TestFile" ), "TestFile" );
     ASSERT_EQ( Kokoro::FileSystem::GetFileName( "./TestFile" ), "TestFile" );
-    ASSERT_EQ( Kokoro::FileSystem::GetFileName( "./test/TestFile" ),
-               "TestFile" );
+    ASSERT_EQ( Kokoro::FileSystem::GetFileName( "./test/TestFile" ), "TestFile" );
 }
 
 TEST( FileSystem, Touch )

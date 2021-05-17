@@ -1,3 +1,5 @@
+add_subdirectory(third-party/fmt)
+
 add_subdirectory(Config)
 add_subdirectory(Exception)
 
