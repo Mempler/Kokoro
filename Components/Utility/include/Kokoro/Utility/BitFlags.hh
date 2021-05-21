@@ -36,4 +36,12 @@
     inline NAME& operator|=( NAME& a, int b )                                            \
     {                                                                                    \
         return a = a | b;                                                                \
+    }                                                                                    \
+    inline NAME& operator&=( NAME& a, NAME b )                                           \
+    {                                                                                    \
+        return a = static_cast<NAME>( a & b );                                           \
+    }                                                                                    \
+    inline NAME& operator&=( NAME& a, int b )                                            \
+    {                                                                                    \
+        return a = static_cast<NAME>( a & b );                                           \
     }
